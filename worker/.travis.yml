@@ -1,0 +1,20 @@
+sudo: required
+services: 
+    - docker
+
+before_install:
+    -docker build -t eliran/rect-test - f ./client/Dockerfile.dev ./client
+
+script: 
+    docker run eliran/rect-test npm test -- --coverage
+
+after_success: 
+    - docker build -t eliran/multi-client ./client
+    - docker build - t eliran/multi-nginx ./nginx
+    - docker build - t eliran/multi-server ./server
+    - docker build - t eliran/multi-worker ./worker
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push eliran/multi-client
+    - docker push eliran/multi-nginx
+    - docker push  eliran/multi-server
+    - docker push  eliran/multi-worker
